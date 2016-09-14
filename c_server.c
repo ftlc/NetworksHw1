@@ -84,7 +84,7 @@ int main(int argc, char* argv[])
                 clientLen = sizeof(clientAddr);
 
                 // Wait for client to connect
-                if((clientLen = accept (serverSocket, (struct sockaddr *) &clientAddr, &clientLen))<0)
+                if((clientSocket = accept (serverSocket, (struct sockaddr *) &clientAddr, &clientLen))<0)
                 {
                         fprintf(stderr, "Accept: error\n");
                 }
