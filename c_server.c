@@ -110,14 +110,23 @@ int main(int argc, char* argv[])
                 
                 char* get_request = strstr(read_buffer, "/");
 
-                printf("StrStr in use: \n%s", get_request);
+                printf("\n\nStrStr in use: \n%s", get_request);
+                get_request++;
+                printf("\n\nIterate the Pointer: \n%s", get_request);
 
                 char* file_location = strtok(get_request, " ");
- 
-                printf("FILE LOCATION: \n%s", file_location);
 
+                if(file_location == NULL)
+                {
+                        printf("File Location is NULL\n");
+                }
+                else
+                {
 
-                fl = fopen(file_name, "r");
+                        printf("\nFILE LOCATION: %s\n", file_location);
+                }
+
+                fl = fopen(file_location, "r");
                 file_size = get_f_len(fl);
 
 
