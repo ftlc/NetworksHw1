@@ -80,7 +80,7 @@ int main(int argc, char* argv[])
         memset(file_buffer, 0, FILE_BUFFER_SIZE);
 
 
-        char* file_name = "t_file.txt";
+        char* file_name = "testdir/t_file.txt";
 
         // Infinite Loop
         // Those are bad, except when they're not
