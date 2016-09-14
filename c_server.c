@@ -34,20 +34,6 @@ int main(int argc, char* argv[])
         {
                 fprintf(stderr, "Usage:  %s <Server Port>\n", argv[0]);
                 exit(1);
-        // First we create the socket
-        
-        if((serverSocket = socket (PF_INET, SOCK_STREAM, IPPROTO_TCP)) < 0)
-        {
-                fprintf(stderr, "Socket: error\n");
-        }
-
-        // Initialize Struct
-        memset(&serverAddr, 0, sizeof(serverAddr));
-
-        serverAddr.sin_family = AF_INET;
-        serverAddr.sin_addr.s_addr = htonl(INADDR_ANY);
-        serverAddr.sin_port = htons(serverPort);
-
 
         }
 
@@ -103,13 +89,15 @@ int main(int argc, char* argv[])
                         fprintf(stderr, "Accept: error\n");
                 }
 
+                printf("Connection Established\n");
+
                 // Handle Get Request
                 
 
                 // Get the File
                 
-                memset(read_buffer, 0, READ_BUFFER_SIZE - 1);
-                read(clientSocket, read_buffer, READ_BUFFER_SIZE -1);
+              //  memset(read_buffer, 0, READ_BUFFER_SIZE - 1);
+              //  read(clientSocket, read_buffer, READ_BUFFER_SIZE -1);
 
 
 
