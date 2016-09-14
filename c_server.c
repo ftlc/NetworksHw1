@@ -13,7 +13,7 @@
 
 
 #define READ_BUFFER_SIZE 256
-#define file_buffer_SIZE 2048
+#define FILE_BUFFER_SIZE 2048
 
 long get_f_len(FILE *fl);
 
@@ -42,7 +42,7 @@ int main(int argc, char* argv[])
         serverPort = strtol(argv[1], &ptr, 10);
 
         // First we create the socket
-        
+
         if((serverSocket = socket (PF_INET, SOCK_STREAM, IPPROTO_TCP)) < 0)
         {
                 fprintf(stderr, "Socket: error\n");
@@ -92,32 +92,43 @@ int main(int argc, char* argv[])
                 printf("Connection Established\n");
 
                 // Handle Get Request
-                
+
 
                 // Get the File
-                
-              //  memset(read_buffer, 0, READ_BUFFER_SIZE - 1);
-              //  read(clientSocket, read_buffer, READ_BUFFER_SIZE -1);
+
+                //  memset(read_buffer, 0, READ_BUFFER_SIZE - 1);
+                //  read(clientSocket, read_buffer, READ_BUFFER_SIZE -1);
 
 
 
                 fl = fopen(file_name, "r");
                 file_size = get_f_len(fl);
 
-                
-                // Read the file into a buffer
-                char file_buffer[file_size+1];
-                memset(file_buffer, 0, file_size+1);
-                fread(file_buffer, file_size, 1, fl);
 
-                // Write the file to the socket
-                write(clientSocket, file_buffer, file_size);
+                // Read the file into a buffer 
+                /*
+                   char file_buffer[file_size+1];
+                   memset(file_buffer, 0, file_size+1);
+                   fread(file_buffer, file_size, 1, fl); */
+
+                char file_buffer [FILE_BUFFER_SIZE];
+                memset(file_buffer, 0, FILE_BUFFER_SIZE);
+                while(fread (file_buffer, FILE_BUFFER_SIZE -1, 1, fl))
+                {
+                        write(clientSocket, file_buffer, FILE_BUFFER_SIZE-1);
+                        memset(file_buffer, 0, FILE_BUFFER_SIZE);
+                }
+
+
+
+
 
                 shutdown(clientSocket, SHUT_RDWR);
                 close(clientSocket);
 
-        }
 
+
+        }
 }
 
 
@@ -130,7 +141,7 @@ long get_f_len(FILE *fl)
         rewind(fl);
 
         return ret;
-        
+
 
 }
 
