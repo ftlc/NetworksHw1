@@ -105,7 +105,7 @@ int main(int argc, char* argv[])
                 memset(read_buffer, 0, READ_BUFFER_SIZE - 1);
                 read(clientSocket, read_buffer, READ_BUFFER_SIZE -1);
 
-                printf("Example GET request: \n%s", read_buffer);
+                // printf("Example GET request: \n%s", read_buffer);
 
                 // Handle GET request
                 
@@ -145,11 +145,18 @@ char* Handle_Get_Request (char* read_buffer)
 {
         char* get_request = strstr(read_buffer, "/");
 
+        if(strncmp(get_request, " HTTP/1", 7))
+        {
+
         get_request++;
 
         char* file_location = strtok(get_request, " ");
  
         return file_location;
+
+        }
+
+        return "nofile.txt";
 }
 
 
