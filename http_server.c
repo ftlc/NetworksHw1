@@ -81,7 +81,7 @@ int main(int argc, char* argv[])
                 
                 // GET Request
                 //
-                FILE *fl = fopen("TMDG.txt", "r");
+                FILE *fl = fopen("t_file.txt", "r");
 
                 printf("Test 4.5\n");
                 long file_size = get_f_len(fl);
