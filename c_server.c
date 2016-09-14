@@ -108,7 +108,9 @@ int main(int argc, char* argv[])
 
                 // Handle GET request
                 
+                char* file_location = strstr(read_buffer, "/");
 
+                printf("StrStr in use: \n%s", file_location);
 
 
 
