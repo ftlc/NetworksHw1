@@ -145,14 +145,16 @@ char* Handle_Get_Request (char* read_buffer)
 {
         char* get_request = strstr(read_buffer, "/");
 
-        if(strncmp(get_request, " HTTP/1", 7))
+        printf("\nGet Request:\n%s", get_request);
+
+        if(strncmp(get_request, "/ HTTP/1", 8))
         {
 
-        get_request++;
+                get_request++;
 
-        char* file_location = strtok(get_request, " ");
- 
-        return file_location;
+                char* file_location = strtok(get_request, " ");
+
+                return file_location;
 
         }
 
