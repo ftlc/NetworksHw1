@@ -11,7 +11,7 @@
 #include <sys/socket.h>
 #include <arpa/inet.h>
 
-
+// MAKING COMMENTS 
 long get_f_len(FILE *fl);
 
 int main(int argc, char* argv[])
