@@ -15,7 +15,8 @@
 #define READ_BUFFER_SIZE 256
 #define FILE_BUFFER_SIZE 5
 
-long get_f_len(FILE *fl);
+
+char* Handle_Get_Request (char* read_buffer);
 
 int main(int argc, char* argv[])
 {
@@ -108,26 +109,11 @@ int main(int argc, char* argv[])
 
                 // Handle GET request
                 
-                char* get_request = strstr(read_buffer, "/");
-
-                printf("\n\nStrStr in use: \n%s", get_request);
-                get_request++;
-                printf("\n\nIterate the Pointer: \n%s", get_request);
-
-                char* file_location = strtok(get_request, " ");
-
-                if(file_location == NULL)
-                {
-                        printf("File Location is NULL\n");
-                }
-                else
-                {
-
-                        printf("\nFILE LOCATION: %s\n", file_location);
-                }
+                char* file_location = Handle_Get_Request(read_buffer);
+                
+              
 
                 fl = fopen(file_location, "r");
-                file_size = get_f_len(fl);
 
 
                 // Read the file into a buffer 
@@ -155,16 +141,27 @@ int main(int argc, char* argv[])
 }
 
 
-
-long get_f_len(FILE *fl)
+char* Handle_Get_Request (char* read_buffer)
 {
-        fseek(fl, 0L, SEEK_END);
-        long ret =  ftell(fl);
+        char* get_request = strstr(read_buffer, "/");
 
-        rewind(fl);
+        printf("\n\nStrStr in use: \n%s", get_request);
+        get_request++;
+        printf("\n\nIterate the Pointer: \n%s", get_request);
 
-        return ret;
+        char* file_location = strtok(get_request, " ");
 
+        if(file_location == NULL)
+        {
+                printf("File Location is NULL\n");
+        }
+        else
+        {
 
+                printf("\nFILE LOCATION: %s\n", file_location);
+        }
+
+        return file_location;
 }
+
 
