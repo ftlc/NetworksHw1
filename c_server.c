@@ -13,7 +13,7 @@
 
 
 #define READ_BUFFER_SIZE 256
-#define FILE_BUFFER_SIZE 2048
+#define FILE_BUFFER_SIZE 5
 
 long get_f_len(FILE *fl);
 
@@ -75,6 +75,11 @@ int main(int argc, char* argv[])
         long file_size;
         FILE *fl;
 
+
+        char file_buffer [FILE_BUFFER_SIZE];
+        memset(file_buffer, 0, FILE_BUFFER_SIZE);
+
+
         char* file_name = "t_file.txt";
 
         // Infinite Loop
@@ -96,8 +101,10 @@ int main(int argc, char* argv[])
 
                 // Get the File
 
-                //  memset(read_buffer, 0, READ_BUFFER_SIZE - 1);
-                //  read(clientSocket, read_buffer, READ_BUFFER_SIZE -1);
+                memset(read_buffer, 0, READ_BUFFER_SIZE - 1);
+                read(clientSocket, read_buffer, READ_BUFFER_SIZE -1);
+
+                printf("Example GET request: \n%s", read_buffer);
 
 
 
@@ -106,20 +113,11 @@ int main(int argc, char* argv[])
 
 
                 // Read the file into a buffer 
-                /*
-                   char file_buffer[file_size+1];
-                   memset(file_buffer, 0, file_size+1);
-                   fread(file_buffer, file_size, 1, fl); 
-                    write(clientSocket, file_buffer, file_size); */
-                   
 
-                int read_ret;
                 char file_buffer [FILE_BUFFER_SIZE];
                 memset(file_buffer, 0, FILE_BUFFER_SIZE);
-                
-             //   read_ret = fread (file_buffer, FILE_BUFFER_SIZE -1, 1, fl); 
-             //   printf("Fread value: %d\n", read_ret);
-                
+
+
                 while(fread (file_buffer, 1, 4,  fl) == 4 )
                 {
                         write(clientSocket, file_buffer, 4);
