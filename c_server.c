@@ -109,14 +109,21 @@ int main(int argc, char* argv[])
                 /*
                    char file_buffer[file_size+1];
                    memset(file_buffer, 0, file_size+1);
-                   fread(file_buffer, file_size, 1, fl); */
+                   fread(file_buffer, file_size, 1, fl); 
+                    write(clientSocket, file_buffer, file_size); */
+                   
 
+                int read_ret;
                 char file_buffer [FILE_BUFFER_SIZE];
                 memset(file_buffer, 0, FILE_BUFFER_SIZE);
-                while(fread (file_buffer, FILE_BUFFER_SIZE -1, 1, fl))
+                
+             //   read_ret = fread (file_buffer, FILE_BUFFER_SIZE -1, 1, fl); 
+             //   printf("Fread value: %d\n", read_ret);
+                
+                while(fread (file_buffer, 1, 4,  fl) == 4 )
                 {
-                        write(clientSocket, file_buffer, FILE_BUFFER_SIZE-1);
-                        memset(file_buffer, 0, FILE_BUFFER_SIZE);
+                        write(clientSocket, file_buffer, 4);
+                        memset(file_buffer, 0, 4);
                 }
 
 
