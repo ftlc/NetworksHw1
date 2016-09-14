@@ -115,6 +115,12 @@ int main(int argc, char* argv[])
 
                 fl = fopen(file_location, "r");
 
+                if(fl == NULL)
+                {
+                        printf("Requested file could not be opened\n");
+                        continue;
+                }
+
 
                 // Read the file into a buffer 
 
@@ -130,7 +136,7 @@ int main(int argc, char* argv[])
 
 
 
-
+                fclose(fl);
 
                 shutdown(clientSocket, SHUT_RDWR);
                 close(clientSocket);
