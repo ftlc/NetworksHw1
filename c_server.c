@@ -145,22 +145,10 @@ char* Handle_Get_Request (char* read_buffer)
 {
         char* get_request = strstr(read_buffer, "/");
 
-        printf("\n\nStrStr in use: \n%s", get_request);
         get_request++;
-        printf("\n\nIterate the Pointer: \n%s", get_request);
 
         char* file_location = strtok(get_request, " ");
-
-        if(file_location == NULL)
-        {
-                printf("File Location is NULL\n");
-        }
-        else
-        {
-
-                printf("\nFILE LOCATION: %s\n", file_location);
-        }
-
+ 
         return file_location;
 }
 
