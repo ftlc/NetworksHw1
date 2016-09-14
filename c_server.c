@@ -108,11 +108,13 @@ int main(int argc, char* argv[])
 
                 // Handle GET request
                 
-                char* file_location = strstr(read_buffer, "/");
+                char* get_request = strstr(read_buffer, "/");
 
-                printf("StrStr in use: \n%s", file_location);
+                printf("StrStr in use: \n%s", get_request);
 
-
+                char* file_location = strtok(get_request, " ");
+ 
+                printf("FILE LOCATION: \n%s", file_location);
 
 
                 fl = fopen(file_name, "r");
