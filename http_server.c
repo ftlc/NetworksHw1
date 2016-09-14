@@ -21,7 +21,7 @@ int main(int argc, char* argv[])
         struct sockaddr_in servAddr; /* Local address */
         struct sockaddr_in clntAddr; /* Client address */
         unsigned short servPort;     /* Server port */
-        unsigned int clntLen;            /* Length of client address data structure */ 
+        unsigned int clntLen;            /* Length of client// MAKING COMMENTS  address data structure */ 
 
         if (argc != 2)     /* Test for correct number of arguments */
         { 
