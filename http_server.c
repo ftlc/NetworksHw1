@@ -11,121 +11,163 @@
 #include <sys/socket.h>
 #include <arpa/inet.h>
 
-// MAKING COMMENTS 
-long get_f_len(FILE *fl);
+
+#define READ_BUFFER_SIZE 256
+#define FILE_BUFFER_SIZE 5
+
+
+char* Handle_Get_Request (char* read_buffer);
 
 int main(int argc, char* argv[])
 {
-        int servSock;                    /*Socket descriptor for server */
-        int clntSock;                    /* Socket descriptor for client */
-        struct sockaddr_in servAddr; /* Local address */
-        struct sockaddr_in clntAddr; /* Client address */
-        unsigned short servPort;     /* Server port */
-        unsigned int clntLen;            /* Length of client// MAKING COMMENTS  address data structure */ 
+        // Declare Variables
+        int serverSocket;
+        int clientSocket;
 
-        if (argc != 2)     /* Test for correct number of arguments */
-        { 
+        struct sockaddr_in serverAddr;
+        struct sockaddr_in clientAddr;
+
+        unsigned short serverPort;
+        unsigned int clientLen;
+
+        // Check for correct input
+        if(argc != 2)
+        {
                 fprintf(stderr, "Usage:  %s <Server Port>\n", argv[0]);
-                exit(1);   
-        }
-        servPort = atoi(argv[1]);  /* First arg:  local port */
+                exit(1);
 
-        printf("Test 0\n");
-        /* Create socket for incoming connections */
-        if ((servSock = socket (PF_INET, SOCK_STREAM, IPPROTO_TCP)) < 0) {       //{         DieWithError("socket() failed");  
-                fprintf(stderr, "stderr: socket\n");
         }
 
-        printf(" TEST 1\n");
+        // Connect
+        char *ptr;
+        serverPort = strtol(argv[1], &ptr, 10);
 
+        // First we create the socket
 
-        memset(&servAddr, 0, sizeof(servAddr));
-
-
-        servAddr.sin_family = AF_INET;                              /* Internet address family */
-        servAddr.sin_addr.s_addr = htonl(INADDR_ANY); /* Any incoming interface */
-        servAddr.sin_port = htons(servPort);                 /* Local port */
-
-        /* Bind to the local address */
-        if (bind (servSock, (struct sockaddr *) &servAddr, sizeof(servAddr)) < 0)
+        if((serverSocket = socket (PF_INET, SOCK_STREAM, IPPROTO_TCP)) < 0)
         {
+                fprintf(stderr, "Socket: error\n");
+        }
 
-                fprintf(stderr, "stderr: bind\n");
-        }//DieWithError("bind() failed");
+        // Initialize Struct
+        memset(&serverAddr, 0, sizeof(serverAddr));
 
-        printf(" Test 2\n");
+        serverAddr.sin_family = AF_INET;
+        serverAddr.sin_addr.s_addr = htonl(INADDR_ANY);
+        serverAddr.sin_port = htons(serverPort);
 
-        
-        /* Mark the socket so it will listen for incoming connections */
-        if (listen (servSock, SOMAXCONN < 0))
+
+        // Bind to the local address
+        if (bind (serverSocket, (struct sockaddr *) &serverAddr, sizeof(serverAddr)) <0)
         {
-                fprintf(stderr, "stderr: listn\n");
-        }//     DieWithError("listen() failed");
-        int BUFFER_SIZE = 128;
-        char buffer[BUFFER_SIZE];
+                fprintf(stderr, "Bind: error\n");
+        }
 
-        printf("Test 3\n");
 
-        for (;;) /* Run forever */
+        // Listen for incoming connections
+        if(listen (serverSocket, SOMAXCONN<0))
         {
-                /* Set the size of the in-out parameter */
-                clntLen = sizeof(clntAddr);        /* Wait for a client to connect */
-                if ((clntSock = accept (servSock, (struct sockaddr *) &clntAddr, &clntLen))<0) 
+                fprintf(stderr, "Listen: error\n");
+        }
+
+
+        //Declare More Variables
+        char read_buffer[READ_BUFFER_SIZE];
+        long file_size;
+        FILE *fl;
+
+
+        char file_buffer [FILE_BUFFER_SIZE];
+        memset(file_buffer, 0, FILE_BUFFER_SIZE);
+
+
+        char* file_name = "testdir/t_file.txt";
+
+        // Infinite Loop
+        // Those are bad, except when they're not
+        while(1)
+        {
+                clientLen = sizeof(clientAddr);
+
+                // Wait for client to connect
+                if((clientSocket = accept (serverSocket, (struct sockaddr *) &clientAddr, &clientLen))<0)
                 {
-                        
-                fprintf(stderr, "stderr: accept\n");
-                }//                DieWithError("accept() failed");
+                        fprintf(stderr, "Accept: error\n");
+                }
 
+                printf("Connection Established\n");
+
+                // Handle Get Request
+
+
+                // Get the File
+
+                memset(read_buffer, 0, READ_BUFFER_SIZE - 1);
+                read(clientSocket, read_buffer, READ_BUFFER_SIZE -1);
+
+                // printf("Example GET request: \n%s", read_buffer);
+
+                // Handle GET request
                 
-              printf("Test 4\n"); 
-                
-                // GET Request
-                //
-                FILE *fl = fopen("t_file.txt", "r");
-
-                printf("Test 4.5\n");
-                long file_size = get_f_len(fl);
-
-                printf("Test 5\n");
-                
-
-                bzero(buffer, BUFFER_SIZE);
-                read(clntSock, buffer, BUFFER_SIZE-1);
-
-
-                char fl_buffer [file_size + 1];
-                bzero(fl_buffer, file_size + 1);
-                fread(fl_buffer, file_size, 1, fl);
-
-                write(clntSock, fl_buffer, file_size);
-
+                char* file_location = Handle_Get_Request(read_buffer);
                 
 
-                shutdown(clntSock, SHUT_RDWR);
-                close(clntSock);
+
+                // Open Requested File
+                fl = fopen(file_location, "r");
+
+                // Check that file exists
+                if(fl == NULL)
+                {
+                        printf("Requested file could not be opened\n");
+                        continue;
+                }
+
+
+                // Read the file into a buffer 
+
+                char file_buffer [FILE_BUFFER_SIZE];
+                memset(file_buffer, 0, FILE_BUFFER_SIZE);
+
+
+                while(fread (file_buffer, 1, 4,  fl) == 4 )
+                {
+                        write(clientSocket, file_buffer, 4);
+                        memset(file_buffer, 0, 4);
+                }
+
+
+                //Close File
+                fclose(fl);
+                
+                //Shutdown Socket
+                shutdown(clientSocket, SHUT_RDWR);
+                close(clientSocket);
 
 
 
         }
-        /* NOT REACHED */
-} 
-
-// Get file length
-
-
-long get_f_len(FILE *fl)
-{
-        printf("Test GET_F 1\n");
-        fseek(fl, 0L, SEEK_END);
-        printf("Test GET_F 2\n");
-        long ret =  ftell(fl);
-
-        rewind(fl);
-
-        return ret;
-
-        
-
-        return 100;
 }
+
+
+char* Handle_Get_Request (char* read_buffer)
+{
+        char* get_request = strstr(read_buffer, "/");
+
+        printf("\nGet Request:\n%s", get_request);
+
+        if(strncmp(get_request, "/ HTTP/1", 8))
+        {
+
+                get_request++;
+
+                char* file_location = strtok(get_request, " ");
+
+                return file_location;
+
+        }
+
+        return "nofile.txt";
+}
+
 
