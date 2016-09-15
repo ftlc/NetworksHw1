@@ -17,12 +17,22 @@
 #define FALSE 0
 
 
+typedef struct _get_r {
+        char host[40];
+        char filepath[100];
+} URL_Struct;
+
+
+void parseURL(char* url, URL_Struct *s);
+
 int main(int argc, char *argv [])
 {
         //Declare Variables 
         int serverSocket;
         struct sockaddr_in serverAddr;
         struct hostent *hp;
+
+        URL_Struct* s = calloc(1, sizeof(URL_Struct));
 
         unsigned short serverPort;
         char* str_port;
@@ -65,11 +75,13 @@ int main(int argc, char *argv [])
 
         printf("Numeric Port = %s\n", str_port);
 
-        printf("Numeric Port = %s\n", str_port);
+        parseURL(url, s);
 
         if((serverSocket = socket(AF_INET, SOCK_STREAM, 0)) < 0)
         {
                 fprintf(stderr, "Socket error: %s\n", strerror(errno));
+                 exit(1);
+
         }
 
         
@@ -80,6 +92,8 @@ int main(int argc, char *argv [])
         if(hp == NULL)
         {
                 fprintf(stderr, "Error: specified URL does not exist\n");
+                exit(1);
+
         }
 
         bcopy ( (char*)hp->h_addr, 
@@ -91,42 +105,83 @@ int main(int argc, char *argv [])
         if(connect(serverSocket, (struct sockaddr *) &serverAddr, sizeof(serverAddr)) < 0)
         {
                 fprintf(stderr, "Connect error: %s\n", strerror(errno));
+                exit(1);
         }
-
+        else
+        {
         printf("Connection Established\n");
-
+        }
 
         int BUFFER_SIZE = 300;
         char buffer [BUFFER_SIZE];
 
-        if(write(serverSocket, "GET / HTTP/1.1\r\n\r\n", strlen("GET / HTTP/1.1\r\n\r\n")) < 0)
+        char* get_request = malloc(100);
+        sprintf(get_request, "GET %s HTTP/1.1\r\n\r\n", s->filepath);
+
+        if(write(serverSocket, get_request, strlen(get_request)) < 0)
         {
                 fprintf(stderr, "Write returned an error: %s\n", strerror(errno));
                 exit(1);
         }
         printf("Write successful\n");
 
-        bzero(buffer, BUFFER_SIZE);
+        memset(buffer, 0, BUFFER_SIZE);
 
         if(read (serverSocket, buffer, BUFFER_SIZE -1)<0)
         {
                 printf("Error reading from socket\n");
+                exit(1);
+
         }
         printf("Read Successful\n");
         printf("%s", buffer);
-        bzero(buffer, BUFFER_SIZE);
+        memset(buffer, 0, BUFFER_SIZE);
 
 
 
         while(read (serverSocket, buffer, BUFFER_SIZE -1))
         {
                 printf("%s", buffer);
-                bzero(buffer, BUFFER_SIZE);
+                memset(buffer, 0, BUFFER_SIZE);
         }
 
         shutdown(serverSocket, SHUT_RDWR);
         close(serverSocket);
 
         return 0;
+
+}
+
+void parseURL(char* url, URL_Struct *s)
+{
+        char* path = malloc(100);
+        printf("PATH: %s\n", path);
+        char* localpath = strstr(url, "/");
+      
+
+        printf("URL: %s\n", url);
+        printf("PATH: %s\n", path);
+
+        char* host = malloc(40);
+        printf("HOST: %s\n", url);
+        printf("PATH: %s\n", path);
+
+        if(localpath == NULL)
+        {
+                strcpy(s->host, url);
+                strcpy(s->filepath, "/");
+        }
+        else
+        {
+                strcpy(path, localpath);    
+                host = strtok(url, "/");
+                strcpy(s->host, host);
+                strcpy(s->filepath, path);
+        }
+
+
+
+        printf("Filepath: %s\n", s->filepath);
+
 
 }
