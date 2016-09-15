@@ -139,11 +139,13 @@ int main(int argc, char *argv [])
 
 
 
-        while(read (serverSocket, buffer, BUFFER_SIZE -1))
+        while(read (serverSocket, buffer, BUFFER_SIZE - 1))
         {
                 printf("%s", buffer);
                 memset(buffer, 0, BUFFER_SIZE);
         }
+
+        printf("\nTHIS CODE GOT RUN\n");
 
         shutdown(serverSocket, SHUT_RDWR);
         close(serverSocket);
