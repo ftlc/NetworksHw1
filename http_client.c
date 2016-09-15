@@ -105,6 +105,7 @@ int main(int argc, char *argv [])
                 exit(1);
 
         }
+        
 
         bcopy ( (char*)hp->h_addr, 
                         (char *) &serverAddr.sin_addr.s_addr, 
@@ -132,7 +133,7 @@ int main(int argc, char *argv [])
 
         // Print GET request to variable
         char* get_request = malloc(100);
-        sprintf(get_request, "GET %s HTTP/1.1\r\n\r\n", s->filepath);
+        sprintf(get_request, "GET %s HTTP/1.1\r\nHost: %s\r\nConnection: close\r\n\r\n", s->filepath, s->host);
 
         // Write request to server socket
         if(write(serverSocket, get_request, strlen(get_request)) < 0)
