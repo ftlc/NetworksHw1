@@ -1,3 +1,3 @@
 git add .
-git commit -m "Minor Fixes"
+git commit -m "MAJOR FIXES. THE CLIENT WORKS"
 git push origin master
