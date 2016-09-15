@@ -10,6 +10,8 @@
 #include <sys/socket.h>
 #include <arpa/inet.h>
 #include <errno.h>
+#include <netinet/in.h>
+#include <netdb.h>
 
 #define TRUE 1
 #define FALSE 0
@@ -20,6 +22,7 @@ int main(int argc, char *argv [])
         //Declare Variables 
         int serverSocket;
         struct sockaddr_in serverAddr;
+        struct hostent *hp;
 
         unsigned short serverPort;
         char* str_port;
@@ -72,21 +75,58 @@ int main(int argc, char *argv [])
         
         memset(&serverAddr, 0, sizeof(serverAddr));
         serverAddr.sin_family = AF_INET;
-        serverAddr.sin_addr.s_addr = htonl(INADDR_ANY);
+        hp = gethostbyname(url);
+
+        if(hp == NULL)
+        {
+                fprintf(stderr, "Error: specified URL does not exist\n");
+        }
+
+        bcopy ( (char*)hp->h_addr, 
+                        (char *) &serverAddr.sin_addr.s_addr, 
+                        hp->h_length);                
         serverAddr.sin_port = htons(serverPort);
+
 
         if(connect(serverSocket, (struct sockaddr *) &serverAddr, sizeof(serverAddr)) < 0)
         {
                 fprintf(stderr, "Connect error: %s\n", strerror(errno));
         }
 
+        printf("Connection Established\n");
+
+
+        int BUFFER_SIZE = 300;
+        char buffer [BUFFER_SIZE];
+
+        if(write(serverSocket, "GET / HTTP/1.1\r\n\r\n", strlen("GET / HTTP/1.1\r\n\r\n")) < 0)
+        {
+                fprintf(stderr, "Write returned an error: %s\n", strerror(errno));
+                exit(1);
+        }
+        printf("Write successful\n");
+
+        bzero(buffer, BUFFER_SIZE);
+
+        if(read (serverSocket, buffer, BUFFER_SIZE -1)<0)
+        {
+                printf("Error reading from socket\n");
+        }
+        printf("Read Successful\n");
+        printf("%s", buffer);
+        bzero(buffer, BUFFER_SIZE);
 
 
 
-        
+        while(read (serverSocket, buffer, BUFFER_SIZE -1))
+        {
+                printf("%s", buffer);
+                bzero(buffer, BUFFER_SIZE);
+        }
 
-
-
+        shutdown(serverSocket, SHUT_RDWR);
+        close(serverSocket);
 
         return 0;
+
 }
