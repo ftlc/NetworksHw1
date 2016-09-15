@@ -1,3 +1,5 @@
+#!/bin/sh
+
 git add .
-git commit -m "Continue Working on Client implementation"
+git commit -m "$1"
 git push origin master
