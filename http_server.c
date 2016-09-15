@@ -11,12 +11,15 @@
 #include <sys/socket.h>
 #include <arpa/inet.h>
 
-
+// Pre-processor definitions
 #define READ_BUFFER_SIZE 256
 #define FILE_BUFFER_SIZE 5
 
 
+//Function Definitions
 char* Handle_Get_Request (char* read_buffer);
+
+
 
 int main(int argc, char* argv[])
 {
@@ -89,6 +92,7 @@ int main(int argc, char* argv[])
         // Those are bad, except when they're not
         while(1)
         {
+
                 clientLen = sizeof(clientAddr);
 
                 // Wait for client to connect
@@ -108,10 +112,12 @@ int main(int argc, char* argv[])
 
                 // printf("Example GET request: \n%s", read_buffer);
 
+                
+                
                 // Handle GET request
-
                 char* file_location = Handle_Get_Request(read_buffer);
 
+                // Check for shutdown signal
                 if (!strncmp(file_location, "/shutdown", 9))
                 {
                         char shutdown [26] = "\nShutting down the server\n";
@@ -141,6 +147,7 @@ int main(int argc, char* argv[])
                         memset(file_buffer, 0, FILE_BUFFER_SIZE);
 
 
+                        // Write the file to the client socket
                         while(fread (file_buffer, 1, 4,  fl) == 4 )
                         {
                                 write(clientSocket, file_buffer, 4);
@@ -164,28 +171,38 @@ int main(int argc, char* argv[])
 
 
 
+        // Close server socket
         close(serverSocket);
 
 }
 
 
+// Handle the get request
 char* Handle_Get_Request (char* read_buffer)
 {
+        //Get everything after the first slash
         char* get_request = strstr(read_buffer, "/");
 
         printf("\nGet Request:\n%s", get_request);
 
+        //Check for filepath given. Return default index otherwise
         if(strncmp(get_request, "/ HTTP/1", 8))
         {
+                //check for shutdown signal
                 if (!strncmp(get_request, "/shutdown", 9))
                 {
                         return "/shutdown";
                 }
 
+                // Iterate string pointer
+                // gets rid of leading slash
                 get_request++;
 
+                //parse out filepath 
+                //everything before the first space
                 char* file_location = strtok(get_request, " ");
 
+                // return filepath
                 return file_location;
 
         }

@@ -13,18 +13,23 @@
 #include <netinet/in.h>
 #include <netdb.h>
 
+// Preprocessor definitions
 #define TRUE 1
 #define FALSE 0
+#define BUFFER_SIZE 300
 
 
+// Define struct for host and path
 typedef struct _get_r {
         char host[40];
         char filepath[100];
 } URL_Struct;
 
 
+// Function definitions
 void parseURL(char* url, URL_Struct *s);
 
+// Main
 int main(int argc, char *argv [])
 {
         //Declare Variables 
@@ -32,6 +37,7 @@ int main(int argc, char *argv [])
         struct sockaddr_in serverAddr;
         struct hostent *hp;
 
+        // Allocate memory for struct
         URL_Struct* s = calloc(1, sizeof(URL_Struct));
 
         unsigned short serverPort;
@@ -42,7 +48,7 @@ int main(int argc, char *argv [])
         char* filepath;
 
         int rtt = FALSE;
-        
+
 
         // Check for proper argument input
         if(argc < 3 || argc > 4)
@@ -75,20 +81,24 @@ int main(int argc, char *argv [])
 
         printf("Numeric Port = %s\n", str_port);
 
+        // Parse url. Divide into host and filepath. Store in the struct
         parseURL(url, s);
 
+
+        // Socket
         if((serverSocket = socket(AF_INET, SOCK_STREAM, 0)) < 0)
         {
                 fprintf(stderr, "Socket error: %s\n", strerror(errno));
-                 exit(1);
+                exit(1);
 
         }
 
-        
+        // Initialize struct
         memset(&serverAddr, 0, sizeof(serverAddr));
         serverAddr.sin_family = AF_INET;
         hp = gethostbyname(url);
 
+        //Check for valid url
         if(hp == NULL)
         {
                 fprintf(stderr, "Error: specified URL does not exist\n");
@@ -102,6 +112,7 @@ int main(int argc, char *argv [])
         serverAddr.sin_port = htons(serverPort);
 
 
+        // Connect to server socket
         if(connect(serverSocket, (struct sockaddr *) &serverAddr, sizeof(serverAddr)) < 0)
         {
                 fprintf(stderr, "Connect error: %s\n", strerror(errno));
@@ -109,15 +120,21 @@ int main(int argc, char *argv [])
         }
         else
         {
-        printf("Connection Established\n");
+                printf("Connection Established\n");
         }
 
-        int BUFFER_SIZE = 300;
+
+        // Initialize read buffer
+        //  int BUFFER_SIZE = 300;
         char buffer [BUFFER_SIZE];
 
+
+
+        // Print GET request to variable
         char* get_request = malloc(100);
         sprintf(get_request, "GET %s HTTP/1.1\r\n\r\n", s->filepath);
 
+        // Write request to server socket
         if(write(serverSocket, get_request, strlen(get_request)) < 0)
         {
                 fprintf(stderr, "Write returned an error: %s\n", strerror(errno));
@@ -125,8 +142,13 @@ int main(int argc, char *argv [])
         }
         printf("Write successful\n");
 
+        // Free allocated memory
+        free(s);
+
+        // Zero the buffer
         memset(buffer, 0, BUFFER_SIZE);
 
+        // Check that for successfult read
         if(read (serverSocket, buffer, BUFFER_SIZE -1)<0)
         {
                 printf("Error reading from socket\n");
@@ -137,16 +159,18 @@ int main(int argc, char *argv [])
         printf("%s", buffer);
         memset(buffer, 0, BUFFER_SIZE);
 
-
-
+        // Read the rest of the buffer
         while(read (serverSocket, buffer, BUFFER_SIZE - 1))
         {
                 printf("%s", buffer);
                 memset(buffer, 0, BUFFER_SIZE);
         }
 
+
+
         printf("\nTHIS CODE GOT RUN\n");
 
+        // Shutdown and close server socket
         shutdown(serverSocket, SHUT_RDWR);
         close(serverSocket);
 
@@ -154,20 +178,17 @@ int main(int argc, char *argv [])
 
 }
 
+// Parse URL from user imput
 void parseURL(char* url, URL_Struct *s)
 {
+        // Declare variables
         char* path = malloc(100);
-        printf("PATH: %s\n", path);
+
+        // temp path variable to avoid issues with pointer being iterated 
         char* localpath = strstr(url, "/");
-      
-
-        printf("URL: %s\n", url);
-        printf("PATH: %s\n", path);
-
         char* host = malloc(40);
-        printf("HOST: %s\n", url);
-        printf("PATH: %s\n", path);
 
+        // check for filepath
         if(localpath == NULL)
         {
                 strcpy(s->host, url);
