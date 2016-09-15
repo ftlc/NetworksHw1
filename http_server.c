@@ -119,9 +119,9 @@ int main(int argc, char* argv[])
                 // Check that file exists
                 if(fl == NULL)
                 {
-                        char* nofile = "404 Not Found";
+                        char nofile [14] = "404 Not Found\n";
                         fprintf(stderr, nofile);
-                        write(clientSocket, nofile, sizeof(nofile));
+                        write(clientSocket, nofile, sizeof(nofile) -1);
                 }
                 else
                 {
@@ -172,7 +172,7 @@ char* Handle_Get_Request (char* read_buffer)
 
         }
 
-        return "nofile.txt";
+        return "index.html";
 }
 
 

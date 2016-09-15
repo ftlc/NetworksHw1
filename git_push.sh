@@ -1,3 +1,3 @@
 git add .
-git commit -m "MAJOR FIXES. THE CLIENT WORKS"
+git commit -m "Continue Working on Client implementation"
 git push origin master
