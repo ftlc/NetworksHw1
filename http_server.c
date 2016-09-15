@@ -108,9 +108,9 @@ int main(int argc, char* argv[])
                 // printf("Example GET request: \n%s", read_buffer);
 
                 // Handle GET request
-                
+
                 char* file_location = Handle_Get_Request(read_buffer);
-                
+
 
 
                 // Open Requested File
@@ -119,27 +119,32 @@ int main(int argc, char* argv[])
                 // Check that file exists
                 if(fl == NULL)
                 {
-                        printf("Requested file could not be opened\n");
-                        continue;
+                        char* nofile = "404 Not Found";
+                        fprintf(stderr, nofile);
+                        write(clientSocket, nofile, sizeof(nofile));
                 }
-
-
-                // Read the file into a buffer 
-
-                char file_buffer [FILE_BUFFER_SIZE];
-                memset(file_buffer, 0, FILE_BUFFER_SIZE);
-
-
-                while(fread (file_buffer, 1, 4,  fl) == 4 )
+                else
                 {
-                        write(clientSocket, file_buffer, 4);
-                        memset(file_buffer, 0, 4);
+
+
+                        // Read the file into a buffer 
+
+                        char file_buffer [FILE_BUFFER_SIZE];
+                        memset(file_buffer, 0, FILE_BUFFER_SIZE);
+
+
+                        while(fread (file_buffer, 1, 4,  fl) == 4 )
+                        {
+                                write(clientSocket, file_buffer, 4);
+                                memset(file_buffer, 0, 4);
+                        }
+
+
+                        //Close File
+                        fclose(fl);
+
                 }
 
-
-                //Close File
-                fclose(fl);
-                
                 //Shutdown Socket
                 shutdown(clientSocket, SHUT_RDWR);
                 close(clientSocket);
