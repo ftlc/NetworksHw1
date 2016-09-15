@@ -146,7 +146,7 @@ int main(int argc, char* argv[])
                                 write(clientSocket, file_buffer, 4);
                                 memset(file_buffer, 0, 4);
                         }
-                        write(clientSocket, "\n", sizeof("\n"));
+
 
 
                         //Close File
