@@ -9,118 +9,181 @@
 #include <netinet/in.h>
 #include <sys/socket.h>
 #include <arpa/inet.h>
+#include <errno.h>
+#include <netinet/in.h>
+#include <netdb.h>
 
-#define BUF_SIZE 100
+#define TRUE 1
+#define FALSE 0
 
-void *get_sockin(struct sockaddr *s);
+
+typedef struct _get_r {
+        char host[40];
+        char filepath[100];
+} URL_Struct;
+
+
+void parseURL(char* url, URL_Struct *s);
 
 int main(int argc, char *argv [])
 {
+        //Declare Variables 
+        int serverSocket;
+        struct sockaddr_in serverAddr;
+        struct hostent *hp;
 
-        struct addrinfo hints, *r; //short for rotate
-        struct addrinfo *res;
+        URL_Struct* s = calloc(1, sizeof(URL_Struct));
 
-        char cli[INET6_ADDRSTRLEN];
+        unsigned short serverPort;
+        char* str_port;
+        unsigned int clientLen;
+        char* url;
+        char* host;
+        char* filepath;
 
-        int ret;
+        int rtt = FALSE;
+        
 
-        if(argc < 3) //make sure at least 2 arguments are given
+        // Check for proper argument input
+        if(argc < 3 || argc > 4)
         {
-                fprintf(stderr, "Too few arguments.\n");
-                return 1;
+                fprintf(stderr, "Usage %s -options URL PORT\n", argv[0]);
+                exit(1);
         }
 
-        //hints = (struct addrinfo *) malloc (sizeof(struct addrinfo));       
-        memset(&hints, 0, sizeof(struct addrinfo)); //initialize hints to 0
-
-
-        hints.ai_family = AF_INET; //ip version agnostic
-        hints.ai_socktype = SOCK_STREAM; //TCP instead of UDP
-        hints.ai_flags = AI_PASSIVE; //
-       
-
-
-        if(getaddrinfo(argv[1], argv[2], &hints, &res) < 0)
+        //Check for "-p" option
+        if(!strcmp(argv[1], "-p"))
         {
-                fprintf(stderr, "Getaddrinfo returned an error\n");
-                return 1;
-        }
-
-        int cnt = 0;
-
-        int f_descriptor; //file descripter returned by socket()
-        for (r = res; r != NULL; r = r->ai_next) //rotate through linked list until connection can be established
-        {
-                if(f_descriptor = socket(r->ai_family, r->ai_socktype, 0) == -1) // if socket returns error, continue to next iteration
-                {
-                        perror("client: socket not connected\n");
-                        continue; 
-                }
-
-                if(connect(f_descriptor, r->ai_addr, r->ai_addrlen)) //if connect returns error, continue to next iteration
-                {
-                        cnt++;
-                        close(f_descriptor);
-                        printf("Attempt # %d\n", cnt);
-                        perror("client: connect not connected \n");
-                        continue;
-                }
-
-
-                break; //if no erros, break out of loop
-                // seems like the standard way to do it
-        }
-        if(r == NULL) //if never broke out of loop, then connection wasn't established
-        {
-                fprintf(stderr, "Failed to connect.\n");
-                return 1;
-        }
-
-
-
-        inet_ntop(r->ai_family, get_sockin((struct sockaddr *)r->ai_addr), cli, sizeof cli );
-
-        printf("client: conecting to %s\n", cli);
-
-        freeaddrinfo(res);
-
-        int BUFFER_SIZE = 2048;
-        char buffer [BUFFER_SIZE];
-
-        write(f_descriptor, "GET \r\n", strlen("GET \r\n"));
-
-        bzero(buffer, BUFFER_SIZE);
-
-        while(read (f_descriptor, buffer, BUFFER_SIZE -1))
-        {
-                printf("%s", buffer);
-                bzero(buffer, BUFFER_SIZE);
-        }
-
-
-
-        shutdown(f_descriptor, SHUT_RDWR);
-        close(f_descriptor);
-
-
-
-        return 0;
-}
-
-
-
-
-
-
-void *get_sockin(struct sockaddr *s)
-{
-        if(s->sa_family == AF_INET)
-        {
-                return &(((struct sockaddr_in*)s)->sin_addr); // cast as sockaddr_in, get the field, and return
+                rtt = TRUE;
+                url = argv[2];
+                str_port = argv[3];
         }
         else
         {
-                return &(((struct sockaddr_in6*)s)->sin6_addr);  // cast as sockaddr_in6, get the field, and return
+                rtt = FALSE;
+                url = argv[1];
+                str_port = argv[2];
+        }
+
+        printf("RTT = %d\n", rtt);
+        printf("URL = %s\n", url);
+        printf("String Port = %s\n", str_port);
+
+        // Convert Port from string to short
+        char *ptr;
+        serverPort = strtol(str_port, &ptr, 10);
+
+        printf("Numeric Port = %s\n", str_port);
+
+        parseURL(url, s);
+
+        if((serverSocket = socket(AF_INET, SOCK_STREAM, 0)) < 0)
+        {
+                fprintf(stderr, "Socket error: %s\n", strerror(errno));
+                 exit(1);
 
         }
+
+        
+        memset(&serverAddr, 0, sizeof(serverAddr));
+        serverAddr.sin_family = AF_INET;
+        hp = gethostbyname(url);
+
+        if(hp == NULL)
+        {
+                fprintf(stderr, "Error: specified URL does not exist\n");
+                exit(1);
+
+        }
+
+        bcopy ( (char*)hp->h_addr, 
+                        (char *) &serverAddr.sin_addr.s_addr, 
+                        hp->h_length);                
+        serverAddr.sin_port = htons(serverPort);
+
+
+        if(connect(serverSocket, (struct sockaddr *) &serverAddr, sizeof(serverAddr)) < 0)
+        {
+                fprintf(stderr, "Connect error: %s\n", strerror(errno));
+                exit(1);
+        }
+        else
+        {
+        printf("Connection Established\n");
+        }
+
+        int BUFFER_SIZE = 300;
+        char buffer [BUFFER_SIZE];
+
+        char* get_request = malloc(100);
+        sprintf(get_request, "GET %s HTTP/1.1\r\n\r\n", s->filepath);
+
+        if(write(serverSocket, get_request, strlen(get_request)) < 0)
+        {
+                fprintf(stderr, "Write returned an error: %s\n", strerror(errno));
+                exit(1);
+        }
+        printf("Write successful\n");
+
+        memset(buffer, 0, BUFFER_SIZE);
+
+        if(read (serverSocket, buffer, BUFFER_SIZE -1)<0)
+        {
+                printf("Error reading from socket\n");
+                exit(1);
+
+        }
+        printf("Read Successful\n");
+        printf("%s", buffer);
+        memset(buffer, 0, BUFFER_SIZE);
+
+
+
+        while(read (serverSocket, buffer, BUFFER_SIZE - 1))
+        {
+                printf("%s", buffer);
+                memset(buffer, 0, BUFFER_SIZE);
+        }
+
+        printf("\nTHIS CODE GOT RUN\n");
+
+        shutdown(serverSocket, SHUT_RDWR);
+        close(serverSocket);
+
+        return 0;
+
+}
+
+void parseURL(char* url, URL_Struct *s)
+{
+        char* path = malloc(100);
+        printf("PATH: %s\n", path);
+        char* localpath = strstr(url, "/");
+      
+
+        printf("URL: %s\n", url);
+        printf("PATH: %s\n", path);
+
+        char* host = malloc(40);
+        printf("HOST: %s\n", url);
+        printf("PATH: %s\n", path);
+
+        if(localpath == NULL)
+        {
+                strcpy(s->host, url);
+                strcpy(s->filepath, "/");
+        }
+        else
+        {
+                strcpy(path, localpath);    
+                host = strtok(url, "/");
+                strcpy(s->host, host);
+                strcpy(s->filepath, path);
+        }
+
+
+
+        printf("Filepath: %s\n", s->filepath);
+
+
 }
