@@ -83,9 +83,11 @@ int main(int argc, char* argv[])
 
         char* file_name = "testdir/t_file.txt";
 
+        int keep_running = 1;
+
         // Infinite Loop
         // Those are bad, except when they're not
-        while(1)
+        while(keep_running)
         {
                 clientLen = sizeof(clientAddr);
 
@@ -111,11 +113,16 @@ int main(int argc, char* argv[])
 
                 char* file_location = Handle_Get_Request(read_buffer);
 
-
-
+                if (strncmp(file_location, "/shutdown", 9))
+                {
+                        keep_running = 0;
+                        fl = NULL;
+                }
+                else
+                {
                 // Open Requested File
                 fl = fopen(file_location, "r");
-
+                }
                 // Check that file exists
                 if(fl == NULL)
                 {
@@ -152,7 +159,9 @@ int main(int argc, char* argv[])
 
 
 
-        };
+        }
+
+        close(serverSocket);
 
 }
 
@@ -172,6 +181,10 @@ char* Handle_Get_Request (char* read_buffer)
 
                 return file_location;
 
+        }
+        else if (strncmp(get_request, "/shutdown", 9))
+        {
+                return "poweroff";
         }
 
         return "index.html";
