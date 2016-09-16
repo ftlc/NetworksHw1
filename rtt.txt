@@ -1,0 +1,55 @@
+Harry Sadoyan
+
+RTT tables for statistics and averages
+
+
+
+Table for CNN
+
+
+|-------+-------------+---------|
+| Index | Webserver   | RTT     |
+|-------+-------------+---------|
+| 1     | www.cnn.com | 355.798 |
+| 2     | www.cnn.com | 301.285 |
+| 3     | www.cnn.com | 337.281 |
+| 4     | www.cnn.com | 344.715 |
+| 5     | www.cnn.com | 321.698 |
+| 6     | www.cnn.com | 326.124 |
+| 7     | www.cnn.com | 467.069 |
+| 8     | www.cnn.com | 341.624 |
+| 9     | www.cnn.com | 277.588 |
+| 10    | www.cnn.com | 434.465 |
+|-------+-------------+---------|
+
+Average: 331.7647
+
+Much more stable than the ccc servers.
+
+
+Table for our own Server
+|-------+-----------------------+----------|
+| Index | Webserver             | RTT      |
+|-------+-----------------------+----------|
+| 1     | cccwork4.wpi.edu:6767 | 279.607  |
+| 2     | cccwork4.wpi.edu:6767 | 1283.672 |
+| 3     | cccwork4.wpi.edu:6767 | 729.927  |
+| 4     | cccwork4.wpi.edu:6767 | 293.818  |
+| 5     | cccwork4.wpi.edu:6767 | 269.046  |
+| 6     | cccwork4.wpi.edu:6767 | 274.014  |
+| 7     | cccwork4.wpi.edu:6767 | 5259.290 |
+| 8     | cccwork4.wpi.edu:6767 | 534.878  |
+| 9     | cccwork4.wpi.edu:6767 | 375.670  |
+| 10    | cccwork4.wpi.edu:6767 | 525.140  |
+|-------+-----------------------+----------|
+
+
+Average: 982.4864 
+
+Possible fluctuations because of too many people connecting
+
+
+
+
+
+

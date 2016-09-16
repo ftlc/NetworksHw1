@@ -6,6 +6,7 @@
 #include <string.h>
 #include <netdb.h>
 #include <sys/types.h>
+#include <sys/time.h>
 #include <netinet/in.h>
 #include <sys/socket.h>
 #include <arpa/inet.h>
@@ -83,6 +84,11 @@ int main(int argc, char *argv [])
 
         // Parse url. Divide into host and filepath. Store in the struct
         parseURL(url, s);
+
+        // Declare timeval* for gettimeofday
+        struct timeval* startime = calloc(1, sizeof(struct timeval));
+        gettimeofday(startime, NULL);
+
 
 
         // Socket
@@ -167,9 +173,25 @@ int main(int argc, char *argv [])
                 memset(buffer, 0, BUFFER_SIZE);
         }
 
+        printf("\n");
 
 
-        printf("\nTHIS CODE GOT RUN\n");
+
+        // If rtt is entered, calculate endtime, subtract, and print to screen.
+        if(rtt)
+        {
+                struct timeval* endtime = calloc(1, sizeof(struct timeval));
+                gettimeofday(endtime, NULL);
+
+                 double total_time = 1000 * ((double) (endtime->tv_usec - startime->tv_usec) / 1000000 + (double)(endtime->tv_sec - startime->tv_sec)); //convert to milliseconds
+
+                 printf("RTT: %0.3f ms\n", total_time);
+
+        }
+
+
+
+
 
         // Shutdown and close server socket
         shutdown(serverSocket, SHUT_RDWR);
