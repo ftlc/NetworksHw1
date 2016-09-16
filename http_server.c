@@ -10,6 +10,8 @@
 #include <netinet/in.h>
 #include <sys/socket.h>
 #include <arpa/inet.h>
+#include <errno.h>
+
 
 // Pre-processor definitions
 #define READ_BUFFER_SIZE 256
@@ -49,7 +51,7 @@ int main(int argc, char* argv[])
 
         if((serverSocket = socket (PF_INET, SOCK_STREAM, IPPROTO_TCP)) < 0)
         {
-                fprintf(stderr, "Socket: error\n");
+                fprintf(stderr, "Socket: error%s\n", strerror(errno));
         }
 
         // Initialize Struct
@@ -63,14 +65,14 @@ int main(int argc, char* argv[])
         // Bind to the local address
         if (bind (serverSocket, (struct sockaddr *) &serverAddr, sizeof(serverAddr)) <0)
         {
-                fprintf(stderr, "Bind: error\n");
+                fprintf(stderr, "Bind: error%s\n", strerror(errno));
         }
 
 
         // Listen for incoming connections
         if(listen (serverSocket, SOMAXCONN<0))
         {
-                fprintf(stderr, "Listen: error\n");
+                fprintf(stderr, "Listen: error%s\n", strerror(errno));
         }
 
 
@@ -84,9 +86,6 @@ int main(int argc, char* argv[])
         memset(file_buffer, 0, FILE_BUFFER_SIZE);
 
 
-        char* file_name = "testdir/t_file.txt";
-
-        int keep_running = 1;
 
         // Infinite Loop
         // Those are bad, except when they're not
@@ -98,7 +97,7 @@ int main(int argc, char* argv[])
                 // Wait for client to connect
                 if((clientSocket = accept (serverSocket, (struct sockaddr *) &clientAddr, &clientLen))<0)
                 {
-                        fprintf(stderr, "Accept: error\n");
+                        fprintf(stderr, "Accept: error%s\n", strerror(errno));
                 }
 
                 printf("Connection Established\n");
@@ -110,21 +109,12 @@ int main(int argc, char* argv[])
                 memset(read_buffer, 0, READ_BUFFER_SIZE - 1);
                 read(clientSocket, read_buffer, READ_BUFFER_SIZE -1);
 
-                // printf("Example GET request: \n%s", read_buffer);
+                printf("GET request: \n%s", read_buffer);
 
                 
                 
                 // Handle GET request
                 char* file_location = Handle_Get_Request(read_buffer);
-
-                // Check for shutdown signal
-                if (!strncmp(file_location, "/shutdown", 9))
-                {
-                        char shutdown [26] = "\nShutting down the server\n";
-                        printf("%s\n", shutdown);
-                        write(clientSocket, shutdown, sizeof(shutdown) -1);
-                        break;             
-                }
 
 
                 // Open Requested File
@@ -147,6 +137,7 @@ int main(int argc, char* argv[])
                         memset(file_buffer, 0, FILE_BUFFER_SIZE);
 
 
+                      //  send(clientSocket, "HTTP/1.1 200 OK\n", sizeof("HTTP/1.1 200 OK\n"), 0);
                         // Write the file to the client socket
                         while(fread (file_buffer, 1, 4,  fl) == 4 )
                         {
@@ -171,9 +162,6 @@ int main(int argc, char* argv[])
 
 
 
-        // Close server socket
-        close(serverSocket);
-
 }
 
 
@@ -183,16 +171,10 @@ char* Handle_Get_Request (char* read_buffer)
         //Get everything after the first slash
         char* get_request = strstr(read_buffer, "/");
 
-        printf("\nGet Request:\n%s", get_request);
 
         //Check for filepath given. Return default index otherwise
         if(strncmp(get_request, "/ HTTP/1", 8))
         {
-                //check for shutdown signal
-                if (!strncmp(get_request, "/shutdown", 9))
-                {
-                        return "/shutdown";
-                }
 
                 // Iterate string pointer
                 // gets rid of leading slash

@@ -74,13 +74,12 @@ int main(int argc, char *argv [])
 
         printf("RTT = %d\n", rtt);
         printf("URL = %s\n", url);
-        printf("String Port = %s\n", str_port);
+        printf("Port = %s\n", str_port);
 
         // Convert Port from string to short
         char *ptr;
         serverPort = strtol(str_port, &ptr, 10);
 
-        printf("Numeric Port = %s\n", str_port);
 
         // Parse url. Divide into host and filepath. Store in the struct
         parseURL(url, s);
