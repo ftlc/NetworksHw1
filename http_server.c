@@ -74,6 +74,7 @@ int main(int argc, char* argv[])
         {
                 fprintf(stderr, "Listen: error%s\n", strerror(errno));
         }
+        printf("Listening for New Connections\n");
 
 
         //Declare More Variables
@@ -101,60 +102,66 @@ int main(int argc, char* argv[])
                 }
 
                 printf("Connection Established\n");
-
-
-
-                // Get the File
-
-                memset(read_buffer, 0, READ_BUFFER_SIZE - 1);
-                read(clientSocket, read_buffer, READ_BUFFER_SIZE -1);
-
-                printf("GET request: \n%s", read_buffer);
-
-                
-                
-                // Handle GET request
-                char* file_location = Handle_Get_Request(read_buffer);
-
-
-                // Open Requested File
-                fl = fopen(file_location, "r");
-
-                // Check that file exists
-                if(fl == NULL)
-                {
-                        char nofile [14] = "404 Not Found\n";
-                        fprintf(stderr, nofile);
-                        write(clientSocket, nofile, sizeof(nofile) -1);
+                int pid;
+                if((pid = fork()) < 0) { //check if fork is successful 
+                        fprintf(stderr, "Fork error: %s\n", strerror(errno));
                 }
-                else
+                else if(pid == 0)  // Child Process handles client. Parent process loops back to accept
                 {
 
+                        // Get the File
 
-                        // Read the file into a buffer 
+                        memset(read_buffer, 0, READ_BUFFER_SIZE - 1);
+                        read(clientSocket, read_buffer, READ_BUFFER_SIZE -1);
 
-                        char file_buffer [FILE_BUFFER_SIZE];
-                        memset(file_buffer, 0, FILE_BUFFER_SIZE);
+                        printf("GET request: \n%s", read_buffer);
 
 
-                      //  send(clientSocket, "HTTP/1.1 200 OK\n", sizeof("HTTP/1.1 200 OK\n"), 0);
-                        // Write the file to the client socket
-                        while(fread (file_buffer, 1, 4,  fl) == 4 )
+
+                        // Handle GET request
+                        char* file_location = Handle_Get_Request(read_buffer);
+
+
+                        // Open Requested File
+                        fl = fopen(file_location, "r");
+
+                        // Check that file exists
+                        if(fl == NULL)
                         {
-                                write(clientSocket, file_buffer, 4);
-                                memset(file_buffer, 0, 4);
+                                char nofile [14] = "404 Not Found\n";
+                                fprintf(stderr, nofile);
+                                write(clientSocket, nofile, sizeof(nofile) -1);
                         }
+                        else
+                        {
+
+
+                                // Read the file into a buffer 
+
+                                char file_buffer [FILE_BUFFER_SIZE];
+                                memset(file_buffer, 0, FILE_BUFFER_SIZE);
+
+
+                                //  send(clientSocket, "HTTP/1.1 200 OK\n", sizeof("HTTP/1.1 200 OK\n"), 0);
+                                // Write the file to the client socket
+                                while(fread (file_buffer, 1, 4,  fl) == 4 )
+                                {
+                                        write(clientSocket, file_buffer, 4);
+                                        memset(file_buffer, 0, 4);
+                                }
 
 
 
-                        //Close File
-                        fclose(fl);
+                                //Close File
+                                fclose(fl);
 
+                        }
+                
+
+                        //Shutdown Socket
+                        shutdown(clientSocket, SHUT_RDWR);
+                        close(clientSocket);
                 }
-
-                //Shutdown Socket
-                shutdown(clientSocket, SHUT_RDWR);
-                close(clientSocket);
 
 
 
