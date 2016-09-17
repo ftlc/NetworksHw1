@@ -18,7 +18,7 @@ There are two executables: "http_server" and "http_client"
 http_server: 
         Usage: ./http_server [PORT]
 
-        Runs simple TCP server on the specified port. 
+        Runs robust multi-threaded TCP server on the specified port. Can handle multiple connections.
 
         Writes the requested file to the client. If no files are requested, uses "index.html" as the default file.
 
